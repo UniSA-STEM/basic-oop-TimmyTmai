@@ -6,3 +6,8 @@ ID: <student_id>
 Username: <username>
 This is my own work as defined by the University's Academic Misconduct Policy.
 """
+class Asset:
+    def __init__(self, name: str, description: str, encrypted: bool = False):
+        self.__name = name
+        self.__description = description
+        self.__encrypted = encrypted
