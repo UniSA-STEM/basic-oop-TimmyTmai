@@ -11,3 +11,21 @@ class Asset:
         self.__name = name
         self.__description = description
         self.__encrypted = encrypted
+
+    def __str__(self):
+        if self.__encrypted:
+            return f"{self.__name}, {self.__description} [Encrypted]"
+        else:
+            return f"{self.__name}, {self.__description}"
+
+    def get_name(self) -> str:
+        return self.__name
+
+    def is_encrypted(self) -> bool:
+        if self.__encrypted:
+            return True
+        return False
+
+    def set_encrypted(self):
+        self.__encrypted = True
+
