@@ -21,7 +21,7 @@ class Hacker:
         self.__trace_level: int = 0
         self.__trace_threshold: int = 5
 
-        # ---------- Simple getters / displays ----------
+        # ---------- Simple getters ----------
 
     def get_rigs(self):
         """Return the currently rig."""
@@ -30,6 +30,8 @@ class Hacker:
     def get_inventory(self) -> list[Asset]:
         """Return inventory list."""
         return self.__inventory
+
+        # ---------- Testing / Debug ----------
 
     def display_inventory(self):
         """Print each asset in inventory (for quick checking/debug)."""
@@ -40,14 +42,14 @@ class Hacker:
             print(a)
 
     def add_asset(self, asset: Asset, time: int):
-        """adds asset to the inventory list for testing"""
+        """adds asset to the inventory list for testing/debug"""
         i = 0
         while i < time:
             self.__inventory.append(asset)
             i = i + 1
 
     def set_trace_level(self, level: int):
-        """manually set trace level for testing"""
+        """manually set trace level for testing/debug"""
         self.__trace_level = level
 
         # ---------- Trace / exposure ----------
@@ -58,7 +60,7 @@ class Hacker:
 
 
     def check_asset(self, asset_name: str) -> int:
-        """Check if asset is available."""
+        """Check if asset is available for consumption."""
         for i, a in enumerate(self.__inventory):
             if a.get_name() == asset_name:
                 return i
@@ -67,8 +69,8 @@ class Hacker:
     # ---------- Core actions ----------
 
     def acquire_rig(self, rig: Rig = None):
-        """Acquire a rig using one CryptoToken"""
-        #Check if there is Cryptotoken
+        """Acquire a rig using one CryptoToken. Create a Default Rig if no rig is provided."""
+        #Check if there is CryptoToken
         token_index = self.check_asset("CryptoToken")
         if token_index == -1:
             print("Not enough tokens to acquire rig")
@@ -81,22 +83,22 @@ class Hacker:
         if rig is None:
             rig = Rig("Default Rig")
 
-        self.__rig = rig
+        self.__rig = rig #Assign the rig to hacker
         print(f"#### {rig.get_name().upper()} ACTIVATED ####")
 
     def attack(self, target_rig: Rig):
         """Attacking a target rig using the rig's launch data spike method"""
-        if self.is_exposed():
+        if self.is_exposed(): #Check if Hacker is exposed
             print("Cannot attack while being exposed")
             return
-        if self.__rig is None:
+        if self.__rig is None: #Check if there is available rig
             print("No rig available to attack")
             return
 
-        if self.__rig.launch_data_spikes(target_rig):
+        if self.__rig.launch_data_spikes(target_rig):  #Calling launch_data_spikes method from Rig class
             self.__trace_level += 1
 
-        if self.is_exposed():
+        if self.is_exposed(): #If the action make the hacker expose, print warning message
             print("The Hacker is exposed")
 
     def extract_assets(self, target_rig: Rig = None):
@@ -125,10 +127,10 @@ class Hacker:
         # Iterate backwards when popping
         for i in range(len(storage) - 1, -1, -1):
             a = storage[i]
-            if not a.is_encrypted():
+            if not a.is_encrypted(): #Check if the asset is encrypted
                 self.__inventory.append(storage.pop(i)) #Removes asset and append to hacker's inventory
                 moved += 1
-        print(f"Extracted {moved} assets from {target.get_name()}")
+        print(f"Extracted {moved} assets from {target.get_name()}") #count how many assets extracted
         return True
 
     def encrypt_inventory(self):
@@ -139,7 +141,7 @@ class Hacker:
             print("Not enough Security Chip to encrypt assets")
             return
         else:
-            self.__inventory.pop(chip_idx)
+            self.__inventory.pop(chip_idx) #Consume chip
 
         #Check if assets not encrypted and encrypt
         for i in self.__inventory:
@@ -156,7 +158,7 @@ class Hacker:
             print("Not enough Security Chip to encrypt assets")
             return
         else:
-            self.__inventory.pop(chip_idx)
+            self.__inventory.pop(chip_idx) #Consume
 
         #Check if asset is encrypted and decrypt
         for i in self.__inventory:
@@ -178,8 +180,8 @@ class Hacker:
             print("Not enough Hardware Patch to upgrade rig")
             return
 
-        self.__inventory.pop(patch_idx)
-        self.__rig.upgrade()
+        self.__inventory.pop(patch_idx) #Consume Hardware Patch
+        self.__rig.upgrade() #Calling upgrade method from Rig class
 
     def scan(self,asset_name: str):
         """Find asset by name remove it and return it, None if no match."""
@@ -209,24 +211,24 @@ class Hacker:
             # iterate backwards so popping/removing is safe
             for i in range(len(self.__inventory) - 1, -1, -1):
                 asset = self.__inventory[i]
-                if asset.is_encrypted():
+                if asset.is_encrypted(): #Check if encrypted
                     print(f"Cannot move encrypted asset ({asset.get_name()})")
                     continue
-                rig.store(asset)
-                self.__inventory.pop(i)
+                if rig.store(asset): #if stored success then remove the asset from hacker inventory
+                    self.__inventory.pop(i)
                 moved += 1
 
-            if moved > 0:
+            if moved > 0: #Check if the operation is success and raise trace level
                 print("Moved all unencrypted items to rig's storage")
                 self.__trace_level += 1
             else:
-                print("No unencrypted assets to store")
+                print("No unencrypted assets to store") #Error message if there is no assets
             return
 
         # Move asset by name
         asset = self.scan(asset_name)  # removes first match from inventory
         if asset:
-            if asset.is_encrypted():
+            if asset.is_encrypted(): #Check encrypted
                 print(f"Cannot move encrypted asset ({asset_name})")
                 self.__inventory.append(asset)  # put back since blocked
                 return
@@ -237,6 +239,7 @@ class Hacker:
             print(f"No matching asset found to store: '{asset_name}'")
 
     def retrieve(self, asset_name: str | None = None):
+        """Retrieve all unencrypted assets or specific asset by name using rig's remove method"""
         # Check if hacker is exposed
         if self.is_exposed():
             print("Cannot transfer items while being exposed")
@@ -255,11 +258,11 @@ class Hacker:
         if asset_name is None:
             # iterate over a copy so removing from storage is safe
             for asset in storage[:]:
-                if asset.is_encrypted():
+                if asset.is_encrypted(): #Check if encrypted
                     print(f"Cannot move encrypted asset ({asset.get_name()})")
                     continue
                 self.__inventory.append(asset)
-                storage.remove(asset)
+                storage.remove(asset) #Remove asset from rig storage
                 moved += 1
 
             if moved > 0:
@@ -273,9 +276,9 @@ class Hacker:
         target = asset_name
         found = False
         for asset in storage[:]:
-            if asset.get_name() == target:
+            if asset.get_name() == target: #Check name
                 found = True
-                if asset.is_encrypted():
+                if asset.is_encrypted(): #Check if encrypted
                     print(f"Cannot move encrypted asset ({target})")
                 else:
                     self.__inventory.append(asset)
@@ -288,6 +291,7 @@ class Hacker:
             print(f"No item named '{target}' found in rig storage")
 
     def repair_rig(self):
+        """Repair rig using one Hardware Patch and rig's repair method"""
         # Check if there is CryptoToken
         token_index = self.check_asset("CryptoToken")
         if token_index == -1:
@@ -304,6 +308,7 @@ class Hacker:
             return
 
     # ---------- String representation ----------
+
     def __str__(self):
         name = self.__name
         rig = self.__rig
@@ -315,7 +320,7 @@ class Hacker:
         else:
             header = f"\n##########\n{name.upper()}\nRig: {rig_name}\nTrace level: {trace}\nInventory:"
 
-        if len(self.__inventory) == 0:
+        if len(self.__inventory) == 0: #Check if there is asset in inventory
             return header + "\n(inventory empty)"
         else:
             lines = [str(a) for a in self.__inventory]

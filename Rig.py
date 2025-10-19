@@ -45,7 +45,7 @@ class Rig:
         return self.__storage
 
     def get_condition(self):
-        """Return current condition."""
+        """Return current condition base on the state of broken and damaged."""
         if self.__damage == 0:
             return f"Pristine (Level {self.__upgrade_level})"
         elif self.__damage > 0 and not self.__broken :
@@ -58,6 +58,7 @@ class Rig:
         return self.__broken
 
     def reach_limit(self):
+        """Return true if storage reaches its limit."""
         if len(self.__storage) >= self.__storage_limit:
             return True
         else:
@@ -72,7 +73,7 @@ class Rig:
             print(a)
 
     def check_asset(self, asset_name: str) -> int:
-        """Check if asset is available."""
+        """Check if asset is available for consume using class Asset get_name method"""
         for i, a in enumerate(self.__storage):
             if a.get_name() == asset_name:
                 return i
@@ -105,7 +106,7 @@ class Rig:
         #Consume Data Spike and deal damage
         self.__storage.pop(data_index)
         print("launch successful")
-        target_rig.take_damage()
+        target_rig.take_damage() #calling take_damage method form class Rig
         return True
 
         # --------- Upgrades / Repair ---------
@@ -120,7 +121,7 @@ class Rig:
         print(f"Rig current storage limit: {self.__storage_limit}")
 
     def repaired(self):
-        """Repair the rig if broken or damaged"""
+        """Repair the rig if broken or damaged by resetting damage counter and state of broken"""
         if self.__damage == 0:
             print(f"{self.__name}: no repair needed.")
             return False
@@ -132,44 +133,45 @@ class Rig:
     # --------- Storage Operations ---------
 
     def store(self, asset: Asset):
-        """For Hacker to use to store assets"""
+        """For Hacker to use to store assets in storage if not reach the limit"""
         if not self.reach_limit():
             self.__storage.append(asset)
-            return
+            return True
         else:
             print("Storage is full")
+            return False
 
     def remove(self, asset: Asset):
         """For Hacker to use to retrieve assets"""
         self.__storage.remove(asset)
 
     def encrypt_storage(self):
-        """Encrypt assets in storage"""
+        """Encrypt assets in storage using one Security Chip, check for encrypted assets"""
         #Check for available chip
         chip_idx = self.check_asset("Security Chip")
         if chip_idx == -1:
             print("Not enough Security Chip to encrypt assets")
             return
         else:
-            self.__storage.pop(chip_idx)
+            self.__storage.pop(chip_idx) #Consume chip
 
         for a in self.__storage:
-            if not a.is_encrypted():
-                a.set_encrypted()
+            if not a.is_encrypted(): #Check if asset is encrypted
+                a.set_encrypted() #Set chip to be encrypted
         print("Encrypted all assets in storage")
 
 
     def decrypt_assets(self):
-        """Decrypt assets in storage"""
+        """Decrypt assets in storage using one Security Chip, check for encrypted assets"""
         chip_idx = self.check_asset("Security Chip")
         if chip_idx == -1:
             print("Not enough Security Chip to encrypt assets")
             return
         else:
-            self.__storage.pop(chip_idx)
+            self.__storage.pop(chip_idx) #consume chip
 
         for a in self.__storage:
-            if a.is_encrypted():
+            if a.is_encrypted(): #Check if encrypted
                 a.set_decrypted()
         print("Decrypted all assets in storage")
 
@@ -182,7 +184,7 @@ class Rig:
             Asset("Removable Drive", "Found in rigs and used for extraction."),
             Asset("Security Chip", "Used to encrypt or decrypt assets.")
         ]
-        if not self.reach_limit():
+        if not self.reach_limit(): #Check if there is available space in storage
             a = random.choice(pool)
             self.__storage.append(a)
             print(f"Generated one {a.get_name()}")

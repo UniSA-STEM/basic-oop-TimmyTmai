@@ -12,8 +12,8 @@ class Asset:
         self.__description = description
         self.__encrypted = encrypted
 
+    # --------- String Representation ---------
     def __str__(self):
-
         if self.__encrypted:
             return f"{self.__name}, {self.__description} [Encrypted]"
         else:

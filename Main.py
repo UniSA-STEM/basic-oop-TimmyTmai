@@ -160,9 +160,14 @@ hacker.set_trace_level(0)
 
 # ---------- 20. Edge Case: Store more assets than storage's limit ----------
 print("\n--- Edge Case 9: Exceed storage limit ---")
+hacker.display_inventory()
+hacker.add_asset(removable_drive,3)
+print('\n Transferring Assets....')
 hacker.store()
+print("\n Rig storage")
 rig.display_storage() #Storage limit 7 assets for Level 1 rig
 rig.generate_assets()
+hacker.display_inventory()
 print("\n========== TEST SUITE COMPLETE ==========")
 
 
